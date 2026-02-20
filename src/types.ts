@@ -4,6 +4,8 @@
 export interface CrmSdkConfig {
   /** The unique identifier for the CRM workspace. */
   workspaceId: string;
+  /** Public API key used to authenticate widget requests (`X-Widget-Key` header). */
+  publicKey: string;
   /** Base URL for the CRM API. Defaults to the production endpoint. */
   apiUrl?: string;
   /** Base URL for the CRM WebSocket endpoint. Inferred from apiUrl when omitted. */
@@ -15,7 +17,7 @@ export interface CrmSdkConfig {
  */
 export interface VisitorSession {
   visitorId: string;
-  chatId?: string;
+  chatId?: number;
   token?: string;
 }
 
@@ -23,28 +25,35 @@ export interface VisitorSession {
  * A single chat message.
  */
 export interface Message {
-  id: string;
-  chatId: string;
+  id?: string;
+  type?: string;
+  chat_id: number;
   content: string;
-  sender: 'visitor' | 'agent';
-  createdAt: string;
+  sender_id?: number | null;
+  visitor_id?: string;
+  created_at: string;
 }
 
 /**
  * Response from POST /widget/init.
  */
 export interface InitResponse {
-  visitorId: string;
-  chatId?: string;
+  visitor_id: string;
   token: string;
-  agentName?: string;
-  agentAvatar?: string;
-  welcomeMessage?: string;
+  chat?: {
+    id: number;
+    uuid: string;
+    status: string;
+    origin: string;
+  };
 }
 
 /**
  * Response from POST /widget/chat.
  */
 export interface CreateChatResponse {
-  chatId: string;
+  id: number;
+  uuid: string;
+  status: string;
+  origin: string;
 }

@@ -1,5 +1,7 @@
 # crm-sdk
 
+use for run - npx serve . -l 3000
+
 > Embeddable CRM Chat Widget SDK — React 19 + TypeScript + Tailwind CSS, framework-agnostic.
 
 ![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)

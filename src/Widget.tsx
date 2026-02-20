@@ -51,21 +51,20 @@ function formatTime(iso: string): string {
 
 // ── Sub-components ───────────────────────────────────────────────────────────
 
-function MessageBubble({ message }: { message: Message }) {
-  const isVisitor = message.sender === 'visitor';
+function MessageBubble({ message, visitorId, isNew }: { message: Message; visitorId?: string; isNew?: boolean }) {
+  const isVisitor = message.visitor_id === visitorId && !message.sender_id;
   return (
-    <div className={`flex flex-col max-w-[80%] animate-msg-in ${isVisitor ? 'self-end' : 'self-start'}`}>
+    <div className={`flex flex-col max-w-[80%] ${isNew ? 'animate-msg-in' : ''} ${isVisitor ? 'self-end' : 'self-start'}`}>
       <div
-        className={`px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed break-words ${
-          isVisitor
-            ? 'bg-blue-600 text-white rounded-br-sm'
-            : 'bg-white text-gray-800 rounded-bl-sm shadow-sm'
-        }`}
+        className={`px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed break-words ${isVisitor
+          ? 'bg-blue-600 text-white rounded-br-sm'
+          : 'bg-white text-gray-800 rounded-bl-sm shadow-sm'
+          }`}
       >
         {message.content}
       </div>
       <div className={`text-[10px] text-gray-400 mt-1 px-1 ${isVisitor ? 'self-end' : ''}`}>
-        {formatTime(message.createdAt)}
+        {formatTime(message.created_at)}
       </div>
     </div>
   );
@@ -109,25 +108,27 @@ export interface WidgetProps {
 }
 
 export default function Widget({ config }: WidgetProps) {
-  const [isOpen, setIsOpen]         = useState(false);
-  const [messages, setMessages]     = useState<Message[]>([]);
-  const [isLoading, setIsLoading]   = useState(true);
-  const [error, setError]           = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState('');
-  const [isSending, setIsSending]   = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [showTyping, setShowTyping] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [agentName, setAgentName]   = useState('Support');
+  const [agentName, setAgentName] = useState('Suporte');
   const [agentAvatar, setAgentAvatar] = useState<string | null>(null);
+  const [newMessageIds, setNewMessageIds] = useState<Set<number | string>>(new Set());
+  const prevMessageCountRef = useRef(0);
 
-  const sessionRef    = useRef<VisitorSession | null>(null);
-  const apiRef        = useRef<ApiClient>(new ApiClient(config.apiUrl));
-  const wsRef         = useRef<WsClient | null>(null);
+  const sessionRef = useRef<VisitorSession | null>(null);
+  const apiRef = useRef<ApiClient>(new ApiClient(config.publicKey, config.apiUrl));
+  const wsRef = useRef<WsClient | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef      = useRef<HTMLTextAreaElement>(null);
-  const isOpenRef     = useRef(false);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const isOpenRef = useRef(false);
   // Capture initial config so effects/callbacks use stable references.
-  const configRef     = useRef(config);
+  const configRef = useRef(config);
 
   // Keep isOpenRef in sync for the WS callback closure.
   useEffect(() => { isOpenRef.current = isOpen; }, [isOpen]);
@@ -142,14 +143,23 @@ export default function Widget({ config }: WidgetProps) {
   }, []);
 
   const connectWs = useCallback((session: VisitorSession) => {
+    // Only connect WebSocket when we have a chatId.
+    if (!session.chatId) return;
+
     const apiUrl = configRef.current.apiUrl ?? 'https://api.crm.exemplo.com';
     const wsBase = configRef.current.wsUrl ?? apiUrl.replace(/^http/, 'ws');
-    const chatId = session.chatId ?? '';
-    const wsUrl  = `${wsBase}/widget/ws?token=${encodeURIComponent(session.token ?? '')}&chatId=${encodeURIComponent(chatId)}`;
+    const wsUrl = `${wsBase}/ws/widget/${session.chatId}?widget_key=${encodeURIComponent(configRef.current.publicKey)}&token=${encodeURIComponent(session.token ?? '')}&visitor_id=${encodeURIComponent(session.visitorId)}`;
 
     wsRef.current?.disconnect();
     wsRef.current = new WsClient(wsUrl, (msg: Message) => {
-      setMessages(prev => [...prev, msg]);
+      setMessages(prev => {
+        const updated = [...prev, msg];
+        // Track new message IDs for animation.
+        const id = msg.id ?? `ws-${prev.length}`;
+        setNewMessageIds(new Set([id]));
+        setTimeout(() => setNewMessageIds(new Set()), 400);
+        return updated;
+      });
       if (!isOpenRef.current) {
         setUnreadCount(prev => prev + 1);
       }
@@ -160,42 +170,49 @@ export default function Widget({ config }: WidgetProps) {
   // ── Initialization ────────────────────────────────────────────────────────
 
   useEffect(() => {
-    const api   = apiRef.current;
+    const api = apiRef.current;
     const saved = loadSession();
 
-    api.init(configRef.current.workspaceId, saved?.visitorId)
+    console.log('[crm-sdk] Calling POST /widget/init...', { workspaceId: configRef.current.workspaceId, visitorId: saved?.visitorId, chatId: saved?.chatId });
+    api.init(configRef.current.workspaceId, saved?.visitorId, saved?.chatId)
       .then(async (data) => {
+        console.log('[crm-sdk] init response:', data);
         api.setToken(data.token);
 
+        const chatId = data.chat?.id ?? saved?.chatId;
+
         const session: VisitorSession = {
-          visitorId: data.visitorId,
-          chatId:    data.chatId,
-          token:     data.token,
+          visitorId: data.visitor_id,
+          chatId,
+          token: data.token,
         };
         sessionRef.current = session;
         saveSession(session);
-
-        if (data.agentName)   setAgentName(data.agentName);
-        if (data.agentAvatar) setAgentAvatar(data.agentAvatar);
 
         let history: Message[] = [];
         if (session.chatId) {
           try { history = await api.getMessages(session.chatId); } catch { /* ignore */ }
         }
 
+        // Welcome message
         const msgs: Message[] = [];
-        if (data.welcomeMessage && history.length === 0) {
+        if (history.length === 0) {
           msgs.push({
-            id: 'welcome', chatId: session.chatId ?? '',
-            content: data.welcomeMessage, sender: 'agent',
-            createdAt: new Date().toISOString(),
+            id: 'welcome',
+            type: 'message',
+            chat_id: session.chatId ?? 0,
+            content: 'Olá! Como podemos ajudar?',
+            sender_id: null,
+            visitor_id: undefined,
+            created_at: new Date().toISOString(),
           });
         }
         setMessages([...msgs, ...history]);
         setIsLoading(false);
         connectWs(session);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('[crm-sdk] init failed:', err);
         setIsLoading(false);
         showError('Could not connect to support. Please try again later.');
       });
@@ -228,12 +245,14 @@ export default function Widget({ config }: WidgetProps) {
     // Create chat thread on first message.
     if (!session.chatId) {
       try {
-        const { chatId } = await apiRef.current.createChat(configRef.current.workspaceId, session.visitorId);
-        session.chatId = chatId;
+        const res = await apiRef.current.createChat(session.visitorId);
+        session.chatId = res.id;
         sessionRef.current = session;
         saveSession(session);
         wsRef.current?.disconnect();
         connectWs(session);
+        // Wait for WS to be ready before sending.
+        await wsRef.current?.waitForOpen();
       } catch {
         showError('Could not start conversation. Please try again.');
         setInputValue(content);
@@ -242,22 +261,14 @@ export default function Widget({ config }: WidgetProps) {
       }
     }
 
-    // Optimistic bubble.
-    const optimistic: Message = {
-      id: `opt-${Date.now()}`, chatId: session.chatId,
-      content, sender: 'visitor', createdAt: new Date().toISOString(),
-    };
-    setMessages(prev => [...prev, optimistic]);
-    setShowTyping(true);
+    // Send via WebSocket — the broadcast will add the message to the list.
+    wsRef.current?.send({
+      type: 'message',
+      content,
+      visitor_id: session.visitorId,
+    });
 
-    try {
-      await apiRef.current.sendMessage(session.chatId, content);
-    } catch {
-      showError('Message could not be delivered. Please try again.');
-    } finally {
-      setShowTyping(false);
-      setIsSending(false);
-    }
+    setIsSending(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -273,18 +284,17 @@ export default function Widget({ config }: WidgetProps) {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <>
+    <div className="fixed bottom-3 right-3 z-[2147483645] flex flex-col items-end">
       {/* ── Chat window ────────────────────────────────────────────── */}
       <div
         className={[
-          'fixed bottom-24 right-6 z-[2147483645]',
-          'w-[360px] max-w-[calc(100vw-2rem)]',
-          'h-[520px] max-h-[calc(100vh-120px)]',
-          'bg-white rounded-2xl flex flex-col overflow-hidden',
+          'w-[360px] max-w-[calc(100vw-1.5rem)]',
+          'h-[520px] max-h-[calc(100vh-100px)]',
+          'bg-white rounded-2xl flex flex-col overflow-hidden mb-3',
           'origin-bottom-right transition-all duration-[250ms]',
           isOpen
             ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
-            : 'opacity-0 scale-90 translate-y-4 pointer-events-none',
+            : 'opacity-0 scale-95 translate-y-4 pointer-events-none',
         ].join(' ')}
         style={{ boxShadow: isOpen ? '0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10)' : 'none' }}
         role="dialog"
@@ -328,7 +338,17 @@ export default function Widget({ config }: WidgetProps) {
             {messages.length === 0 ? (
               <EmptyState />
             ) : (
-              messages.map(msg => <MessageBubble key={msg.id} message={msg} />)
+              messages.map((msg, idx) => {
+                const key = msg.id ?? `msg-${idx}`;
+                return (
+                  <MessageBubble
+                    key={key}
+                    message={msg}
+                    visitorId={sessionRef.current?.visitorId}
+                    isNew={newMessageIds.has(key)}
+                  />
+                );
+              })
             )}
             {showTyping && <TypingIndicator />}
             <div ref={messagesEndRef} />
@@ -349,7 +369,7 @@ export default function Widget({ config }: WidgetProps) {
             value={inputValue}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="Type a message…"
+            placeholder="Digite uma mensagem…"
             rows={1}
             className="flex-1 min-h-[38px] max-h-[100px] px-3 py-2 border-[1.5px] border-gray-200 rounded-[20px] font-widget text-sm text-gray-800 bg-gray-50 resize-none outline-none focus:border-blue-400 focus:bg-white transition-colors placeholder:text-gray-400 overflow-y-auto leading-snug"
             aria-label="Message"
@@ -369,11 +389,10 @@ export default function Widget({ config }: WidgetProps) {
       {/* ── Launcher button ────────────────────────────────────────── */}
       <button
         onClick={() => setIsOpen(prev => !prev)}
-        className="fixed bottom-6 right-6 z-[2147483646] w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-400 text-white flex items-center justify-center shadow-xl active:scale-95 transition-all duration-200 relative outline-none"
+        className="w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-400 text-white flex items-center justify-center shadow-xl active:scale-95 transition-all duration-200 relative outline-none flex-shrink-0"
         aria-label={isOpen ? 'Close chat' : 'Open chat'}
         type="button"
       >
-        {/* Chat / Close icon crossfade */}
         <span className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}>
           <CloseIcon size={24} />
         </span>
@@ -381,13 +400,12 @@ export default function Widget({ config }: WidgetProps) {
           <ChatIcon />
         </span>
 
-        {/* Unread badge */}
         {unreadCount > 0 && !isOpen && (
           <span className="absolute top-0.5 right-0.5 w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-white pointer-events-none">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
-    </>
+    </div>
   );
 }
