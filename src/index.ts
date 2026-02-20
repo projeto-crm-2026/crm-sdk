@@ -2,7 +2,8 @@
  * CRM Chat Widget SDK
  *
  * Embeddable SDK for integrating the CRM chat widget into any website.
- * Zero dependencies — all styles are injected via JavaScript using Shadow DOM.
+ * Built with React + TypeScript + Tailwind CSS. Styles are injected at
+ * runtime into an isolated Shadow DOM — no external CSS files required.
  *
  * @example
  * ```html
@@ -20,14 +21,18 @@
 export type { CrmSdkConfig } from './types';
 export { version } from './version';
 
-import { CrmSdkConfig } from './types';
-import { Widget } from './widget';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 
-let _widget: Widget | null = null;
+import { CrmSdkConfig } from './types';
+import Widget from './Widget';
+import widgetCSS from './widget.css';
+
+let _mounted = false;
 
 /**
  * Initializes the CRM Chat Widget and mounts it into the document.
- * Calling `init` more than once with the same config is a no-op.
+ * Calling `init` more than once is a no-op.
  *
  * @param config - SDK configuration options.
  */
@@ -35,11 +40,34 @@ export function init(config: CrmSdkConfig): void {
   if (!config.workspaceId) {
     throw new Error('[crm-sdk] workspaceId is required');
   }
-  if (_widget) return;
-  _widget = new Widget(config);
+  if (_mounted) return;
+  _mounted = true;
+
+  const bootstrap = () => {
+    // Host element appended to <body>
+    const host = document.createElement('div');
+    host.id = 'crm-widget-host';
+    document.body.appendChild(host);
+
+    // Shadow root provides full CSS isolation
+    const shadow = host.attachShadow({ mode: 'open' });
+
+    // Inject Tailwind CSS (processed at build time) into shadow root
+    const style = document.createElement('style');
+    style.textContent = widgetCSS;
+    shadow.appendChild(style);
+
+    // React root container — inherits font-widget via className
+    const container = document.createElement('div');
+    container.className = 'font-widget';
+    shadow.appendChild(container);
+
+    createRoot(container).render(React.createElement(Widget, { config }));
+  };
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => _widget!.mount());
+    document.addEventListener('DOMContentLoaded', bootstrap);
   } else {
-    _widget.mount();
+    bootstrap();
   }
 }

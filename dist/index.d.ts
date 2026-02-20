@@ -2,7 +2,8 @@
  * CRM Chat Widget SDK
  *
  * Embeddable SDK for integrating the CRM chat widget into any website.
- * Zero dependencies — all styles are injected via JavaScript using Shadow DOM.
+ * Built with React + TypeScript + Tailwind CSS. Styles are injected at
+ * runtime into an isolated Shadow DOM — no external CSS files required.
  *
  * @example
  * ```html
@@ -21,7 +22,7 @@ export { version } from './version';
 import { CrmSdkConfig } from './types';
 /**
  * Initializes the CRM Chat Widget and mounts it into the document.
- * Calling `init` more than once with the same config is a no-op.
+ * Calling `init` more than once is a no-op.
  *
  * @param config - SDK configuration options.
  */

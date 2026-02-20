@@ -1,20 +1,21 @@
 # crm-sdk
 
-> Embeddable CRM Chat Widget SDK — TypeScript-first, zero-dependency, framework-agnostic.
+> Embeddable CRM Chat Widget SDK — React 19 + TypeScript + Tailwind CSS, framework-agnostic.
 
 ![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 The SDK renders a floating chat button and window (JivoChat / Zendesk style) on any website.  
-All styles are injected at runtime using **Shadow DOM** — no external CSS files required.
+Built with **React 19** and **Tailwind CSS v3**. All styles are processed at build time and injected at runtime into an isolated **Shadow DOM** — no external CSS files or global style conflicts.
 
 ## Features
 
-- 💬 Floating launcher button + animated chat window
+- 💬 Floating launcher button + animated chat window (React components)
 - 🎨 Color palette: `#60a5fa` (blue-400), `#2563eb` (blue-600), `#000` — font: *TASA Orbiter*
+- 🎭 Tailwind CSS utility classes — responsive, animated, accessible
 - 🔌 Connects to your CRM backend: `/widget/init`, `/widget/chat`, `/widget/chat/{chatID}/messages`, WebSocket
 - 💾 Visitor session restored from `localStorage` between page loads
 - 📱 Responsive — full-screen on mobile, floating panel on desktop
-- 🚫 Zero runtime dependencies — styles injected via JS, Shadow DOM isolation
+- 🔒 Shadow DOM isolation — zero CSS conflicts with the host page
 - 📦 Three output formats: **UMD** (script tag), **ESM** (bundler), **CJS** (Node tooling)
 
 ## Installation
@@ -173,24 +174,38 @@ npm run typecheck
 ```
 crm-sdk/
 ├── src/
-│   ├── index.ts      # Public API — exports init()
-│   ├── widget.ts     # Chat widget UI (Shadow DOM)
-│   ├── api.ts        # HTTP client
-│   ├── ws.ts         # WebSocket client
-│   ├── session.ts    # localStorage session management
-│   ├── styles.ts     # All CSS (injected at runtime)
-│   ├── types.ts      # Shared TypeScript interfaces
-│   └── version.ts    # Package version constant
+│   ├── index.ts        # Public API — exports init()
+│   ├── Widget.tsx      # React widget (launcher + chat window)
+│   ├── widget.css      # Tailwind CSS directives (processed at build time)
+│   ├── api.ts          # HTTP client
+│   ├── ws.ts           # WebSocket client
+│   ├── session.ts      # localStorage session management
+│   ├── types.ts        # Shared TypeScript interfaces
+│   ├── typings.d.ts    # CSS module type declaration
+│   └── version.ts      # Package version constant
 ├── examples/
-│   └── index.html    # Integration example
-├── dist/             # Built outputs (generated)
+│   └── index.html      # Integration example
+├── dist/               # Built outputs (generated)
+├── tailwind.config.js
 ├── rollup.config.mjs
 ├── tsconfig.json
 ├── package.json
 └── README.md
 ```
 
+## Tech Stack
+
+| Tool           | Version | Role                         |
+|----------------|---------|------------------------------|
+| React          | 19      | UI components                |
+| TypeScript     | 5       | Type safety                  |
+| Tailwind CSS   | 3       | Utility-first styling        |
+| Rollup         | 4       | UMD/ESM/CJS bundling         |
+| PostCSS        | 8       | CSS processing pipeline      |
+| Shadow DOM     | native  | Style isolation              |
+
 ## License
 
 MIT — see [LICENSE](./LICENSE).
+
 
