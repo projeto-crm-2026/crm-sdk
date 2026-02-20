@@ -4,6 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "lib": ["ES2017", "DOM"],
+    "jsx": "react-jsx",
     "declaration": true,
     "declarationDir": "dist",
     "outDir": "dist",
