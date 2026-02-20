@@ -1,0 +1,52 @@
+import { CreateChatResponse, InitResponse, Message } from './types';
+
+const DEFAULT_API_URL = 'https://api.crm.exemplo.com';
+
+export class ApiClient {
+  private baseUrl: string;
+  private token: string | undefined;
+
+  constructor(baseUrl: string = DEFAULT_API_URL) {
+    this.baseUrl = baseUrl.replace(/\/$/, '');
+  }
+
+  setToken(token: string): void {
+    this.token = token;
+  }
+
+  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+    const res = await fetch(`${this.baseUrl}${path}`, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+    if (!res.ok) {
+      throw new Error(`[crm-sdk] HTTP ${res.status} ${res.statusText} — ${method} ${path}`);
+    }
+    return res.json() as Promise<T>;
+  }
+
+  /** POST /widget/init — exchange workspaceId + optional visitorId for a session token. */
+  async init(workspaceId: string, visitorId?: string): Promise<InitResponse> {
+    return this.request<InitResponse>('POST', '/widget/init', { workspaceId, visitorId });
+  }
+
+  /** POST /widget/chat — create a new chat thread. */
+  async createChat(workspaceId: string, visitorId: string): Promise<CreateChatResponse> {
+    return this.request<CreateChatResponse>('POST', '/widget/chat', { workspaceId, visitorId });
+  }
+
+  /** POST /widget/chat/{chatId}/messages — send a visitor message. */
+  async sendMessage(chatId: string, content: string): Promise<Message> {
+    return this.request<Message>('POST', `/widget/chat/${chatId}/messages`, { content });
+  }
+
+  /** GET /widget/chat/{chatId}/messages — fetch message history. */
+  async getMessages(chatId: string): Promise<Message[]> {
+    return this.request<Message[]>('GET', `/widget/chat/${chatId}/messages`);
+  }
+}

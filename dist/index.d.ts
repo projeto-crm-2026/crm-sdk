@@ -16,30 +16,13 @@
  * init({ workspaceId: 'YOUR_WORKSPACE_ID' });
  * ```
  */
-
 export type { CrmSdkConfig } from './types';
 export { version } from './version';
-
 import { CrmSdkConfig } from './types';
-import { Widget } from './widget';
-
-let _widget: Widget | null = null;
-
 /**
  * Initializes the CRM Chat Widget and mounts it into the document.
  * Calling `init` more than once with the same config is a no-op.
  *
  * @param config - SDK configuration options.
  */
-export function init(config: CrmSdkConfig): void {
-  if (!config.workspaceId) {
-    throw new Error('[crm-sdk] workspaceId is required');
-  }
-  if (_widget) return;
-  _widget = new Widget(config);
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => _widget!.mount());
-  } else {
-    _widget.mount();
-  }
-}
+export declare function init(config: CrmSdkConfig): void;

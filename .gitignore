@@ -1,8 +1,8 @@
 # Dependencies
 node_modules/
 
-# Build output
-dist/
+# Build output — tracked in this repo so consumers can use without npm
+# dist/
 
 # TypeScript cache
 *.tsbuildinfo
