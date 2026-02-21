@@ -67,14 +67,14 @@ export class WsClient {
 
   /** Wait until the WebSocket connection is open. */
   async waitForOpen(): Promise<void> {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) return;
+    if (this.ws?.readyState === WebSocket.OPEN) return;
     if (this.readyPromise) await this.readyPromise;
   }
 
   /** Send a JSON message through the WebSocket. Queues if not yet open. */
   send(data: { type: string; content: string; visitor_id?: string }): void {
     const payload = JSON.stringify(data);
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+    if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(payload);
     } else {
       // Queue the message — it will be flushed on 'open'.
