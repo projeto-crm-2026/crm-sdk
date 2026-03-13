@@ -98,11 +98,9 @@ class WsClient {
             this.readyResolve = resolve;
         });
         try {
-            console.log('[crm-sdk] WS connecting to', this.url);
             this.ws = new WebSocket(this.url);
             this.ws.addEventListener('open', () => {
                 var _a;
-                console.log('[crm-sdk] WS connected');
                 // Flush any queued messages.
                 for (const msg of this.pendingMessages) {
                     this.ws.send(msg);
@@ -120,13 +118,11 @@ class WsClient {
                 }
             });
             this.ws.addEventListener('close', (e) => {
-                console.log('[crm-sdk] WS closed', e.code, e.reason);
                 if (!this.closed) {
                     this.reconnectTimer = setTimeout(() => this.connect(), RECONNECT_DELAY_MS);
                 }
             });
             this.ws.addEventListener('error', (e) => {
-                console.error('[crm-sdk] WS error', e);
             });
         }
         catch (_a) {
@@ -264,11 +260,9 @@ function Widget({ config }) {
     useEffect(() => {
         const api = apiRef.current;
         const saved = loadSession();
-        console.log('[crm-sdk] Calling POST /widget/init...', { workspaceId: configRef.current.workspaceId, visitorId: saved === null || saved === void 0 ? void 0 : saved.visitorId, chatId: saved === null || saved === void 0 ? void 0 : saved.chatId });
         api.init(configRef.current.workspaceId, saved === null || saved === void 0 ? void 0 : saved.visitorId, saved === null || saved === void 0 ? void 0 : saved.chatId)
             .then(async (data) => {
-            var _a, _b, _c;
-            console.log('[crm-sdk] init response:', data);
+            var _a, _b;
             api.setToken(data.token);
             const chatId = (_b = (_a = data.chat) === null || _a === void 0 ? void 0 : _a.id) !== null && _b !== void 0 ? _b : saved === null || saved === void 0 ? void 0 : saved.chatId;
             const session = {
@@ -283,22 +277,9 @@ function Widget({ config }) {
                 try {
                     history = await api.getMessages(session.chatId);
                 }
-                catch ( /* ignore */_d) { /* ignore */ }
+                catch ( /* ignore */_c) { /* ignore */ }
             }
-            // Welcome message
-            const msgs = [];
-            if (history.length === 0) {
-                msgs.push({
-                    id: 'welcome',
-                    type: 'message',
-                    chat_id: (_c = session.chatId) !== null && _c !== void 0 ? _c : 0,
-                    content: 'Olá! Como podemos ajudar?',
-                    sender_id: null,
-                    visitor_id: undefined,
-                    created_at: new Date().toISOString(),
-                });
-            }
-            setMessages([...msgs, ...history]);
+            setMessages([...history]);
             setIsLoading(false);
             connectWs(session);
         })
@@ -441,7 +422,6 @@ let _mounted = false;
  * @param config - SDK configuration options.
  */
 function init(config) {
-    console.log('[crm-sdk] init() called with config:', config);
     if (!config.workspaceId) {
         throw new Error('[crm-sdk] workspaceId is required');
     }

@@ -191,20 +191,7 @@ export default function Widget({ config }: WidgetProps) {
           try { history = await api.getMessages(session.chatId); } catch { /* ignore */ }
         }
 
-        // Welcome message
-        const msgs: Message[] = [];
-        if (history.length === 0) {
-          msgs.push({
-            id: 'welcome',
-            type: 'message',
-            chat_id: session.chatId ?? 0,
-            content: 'Olá! Como podemos ajudar?',
-            sender_id: null,
-            visitor_id: undefined,
-            created_at: new Date().toISOString(),
-          });
-        }
-        setMessages([...msgs, ...history]);
+        setMessages([...history]);
         setIsLoading(false);
         connectWs(session);
       })
