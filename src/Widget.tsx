@@ -96,7 +96,7 @@ function EmptyState() {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12 opacity-30">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
       </svg>
-      <span>Start a conversation — we typically reply in minutes.</span>
+      <span>Comece uma conversa — nós respondemos normalmente em algumas horas.</span>
     </div>
   );
 }
