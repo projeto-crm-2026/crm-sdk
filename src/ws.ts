@@ -28,11 +28,9 @@ export class WsClient {
     });
 
     try {
-      console.log('[crm-sdk] WS connecting to', this.url);
       this.ws = new WebSocket(this.url);
 
       this.ws.addEventListener('open', () => {
-        console.log('[crm-sdk] WS connected');
         // Flush any queued messages.
         for (const msg of this.pendingMessages) {
           this.ws!.send(msg);
@@ -51,14 +49,12 @@ export class WsClient {
       });
 
       this.ws.addEventListener('close', (e) => {
-        console.log('[crm-sdk] WS closed', e.code, e.reason);
         if (!this.closed) {
           this.reconnectTimer = setTimeout(() => this.connect(), RECONNECT_DELAY_MS);
         }
       });
 
       this.ws.addEventListener('error', (e) => {
-        console.error('[crm-sdk] WS error', e);
       });
     } catch {
       // WebSocket constructor can throw in some environments.

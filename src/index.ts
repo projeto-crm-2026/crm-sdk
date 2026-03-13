@@ -27,7 +27,6 @@ let _mounted = false;
  * @param config - SDK configuration options.
  */
 export function init(config: CrmSdkConfig): void {
-  console.log('[crm-sdk] init() called with config:', config);
   if (!config.workspaceId) {
     throw new Error('[crm-sdk] workspaceId is required');
   }

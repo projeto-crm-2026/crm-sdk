@@ -172,10 +172,8 @@ export default function Widget({ config }: WidgetProps) {
     const api = apiRef.current;
     const saved = loadSession();
 
-    console.log('[crm-sdk] Calling POST /widget/init...', { workspaceId: configRef.current.workspaceId, visitorId: saved?.visitorId, chatId: saved?.chatId });
     api.init(configRef.current.workspaceId, saved?.visitorId, saved?.chatId)
       .then(async (data) => {
-        console.log('[crm-sdk] init response:', data);
         api.setToken(data.token);
 
         const chatId = data.chat?.id ?? saved?.chatId;
