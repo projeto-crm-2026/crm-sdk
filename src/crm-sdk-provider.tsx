@@ -7,8 +7,6 @@ import widgetCSS from './widget.css';
 export interface CrmSdkProps {
     workspaceId: string;
     publicKey: string;
-    apiUrl?: string;
-    wsUrl?: string;
 }
 
 /**
@@ -29,13 +27,13 @@ export interface CrmSdkProps {
  * }
  * ```
  */
-export function CrmSdk({ workspaceId, publicKey, apiUrl, wsUrl }: CrmSdkProps) {
+export function CrmSdk({ workspaceId, publicKey }: CrmSdkProps) {
     const hostRef = useRef<HTMLDivElement>(null);
     const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 
     const config: CrmSdkConfig = useMemo(
-        () => ({ workspaceId, publicKey, apiUrl, wsUrl }),
-        [workspaceId, publicKey, apiUrl, wsUrl],
+        () => ({ workspaceId, publicKey }),
+        [workspaceId, publicKey],
     );
 
     useEffect(() => {

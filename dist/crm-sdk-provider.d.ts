@@ -1,8 +1,6 @@
 export interface CrmSdkProps {
     workspaceId: string;
     publicKey: string;
-    apiUrl?: string;
-    wsUrl?: string;
 }
 /**
  * Drop-in React component that renders the CRM chat widget
@@ -22,4 +20,4 @@ export interface CrmSdkProps {
  * }
  * ```
  */
-export declare function CrmSdk({ workspaceId, publicKey, apiUrl, wsUrl }: CrmSdkProps): import("react/jsx-runtime").JSX.Element;
+export declare function CrmSdk({ workspaceId, publicKey }: CrmSdkProps): import("react/jsx-runtime").JSX.Element;

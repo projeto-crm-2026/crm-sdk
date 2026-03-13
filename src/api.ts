@@ -1,15 +1,13 @@
 import { CreateChatResponse, InitResponse, Message } from './types';
 
-const DEFAULT_API_URL = 'https://api.crm.exemplo.com';
+const DEFAULT_API_URL = 'https://crm-services-nr0a.onrender.com/v1';
 
 export class ApiClient {
-  private baseUrl: string;
   private publicKey: string;
   private token: string | undefined;
 
-  constructor(publicKey: string, baseUrl: string = DEFAULT_API_URL) {
+  constructor(publicKey: string) {
     this.publicKey = publicKey;
-    this.baseUrl = baseUrl.replace(/\/$/, '');
   }
 
   setToken(token: string): void {
@@ -24,7 +22,7 @@ export class ApiClient {
     if (this.token) {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
-    const res = await fetch(`${this.baseUrl}${path}`, {
+    const res = await fetch(`${DEFAULT_API_URL}${path}`, {
       method,
       headers,
       body: body !== undefined ? JSON.stringify(body) : undefined,

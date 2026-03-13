@@ -893,11 +893,10 @@
 
 	var reactDomExports = requireReactDom();
 
-	const DEFAULT_API_URL = 'https://api.crm.exemplo.com';
+	const DEFAULT_API_URL = 'https://crm-services-nr0a.onrender.com/v1';
 	class ApiClient {
-	    constructor(publicKey, baseUrl = DEFAULT_API_URL) {
+	    constructor(publicKey) {
 	        this.publicKey = publicKey;
-	        this.baseUrl = baseUrl.replace(/\/$/, '');
 	    }
 	    setToken(token) {
 	        this.token = token;
@@ -910,7 +909,7 @@
 	        if (this.token) {
 	            headers['Authorization'] = `Bearer ${this.token}`;
 	        }
-	        const res = await fetch(`${this.baseUrl}${path}`, {
+	        const res = await fetch(`${DEFAULT_API_URL}${path}`, {
 	            method,
 	            headers,
 	            body: body !== undefined ? JSON.stringify(body) : undefined,
@@ -1024,15 +1023,17 @@
 	    }
 	    /** Wait until the WebSocket connection is open. */
 	    async waitForOpen() {
-	        if (this.ws && this.ws.readyState === WebSocket.OPEN)
+	        var _a;
+	        if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.OPEN)
 	            return;
 	        if (this.readyPromise)
 	            await this.readyPromise;
 	    }
 	    /** Send a JSON message through the WebSocket. Queues if not yet open. */
 	    send(data) {
+	        var _a;
 	        const payload = JSON.stringify(data);
-	        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+	        if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.OPEN) {
 	            this.ws.send(payload);
 	        }
 	        else {
@@ -1106,7 +1107,7 @@
 	    const [newMessageIds, setNewMessageIds] = reactExports.useState(new Set());
 	    reactExports.useRef(0);
 	    const sessionRef = reactExports.useRef(null);
-	    const apiRef = reactExports.useRef(new ApiClient(config.publicKey, config.apiUrl));
+	    const apiRef = reactExports.useRef(new ApiClient(config.publicKey));
 	    const wsRef = reactExports.useRef(null);
 	    const messagesEndRef = reactExports.useRef(null);
 	    const inputRef = reactExports.useRef(null);
@@ -1124,14 +1125,13 @@
 	        setTimeout(() => setError(null), 5000);
 	    }, []);
 	    const connectWs = reactExports.useCallback((session) => {
-	        var _a, _b, _c, _d;
+	        var _a, _b;
 	        // Only connect WebSocket when we have a chatId.
 	        if (!session.chatId)
 	            return;
-	        const apiUrl = (_a = configRef.current.apiUrl) !== null && _a !== void 0 ? _a : 'https://api.crm.exemplo.com';
-	        const wsBase = (_b = configRef.current.wsUrl) !== null && _b !== void 0 ? _b : apiUrl.replace(/^http/, 'ws');
-	        const wsUrl = `${wsBase}/ws/widget/${session.chatId}?widget_key=${encodeURIComponent(configRef.current.publicKey)}&token=${encodeURIComponent((_c = session.token) !== null && _c !== void 0 ? _c : '')}&visitor_id=${encodeURIComponent(session.visitorId)}`;
-	        (_d = wsRef.current) === null || _d === void 0 ? void 0 : _d.disconnect();
+	        const wsBase = 'ws://crm-services-nr0a.onrender.com';
+	        const wsUrl = `${wsBase}/v1/ws/widget/${session.chatId}?widget_key=${encodeURIComponent(configRef.current.publicKey)}&token=${encodeURIComponent((_a = session.token) !== null && _a !== void 0 ? _a : '')}&visitor_id=${encodeURIComponent(session.visitorId)}`;
+	        (_b = wsRef.current) === null || _b === void 0 ? void 0 : _b.disconnect();
 	        wsRef.current = new WsClient(wsUrl, (msg) => {
 	            setMessages(prev => {
 	                var _a;
@@ -1291,10 +1291,10 @@
 	 * }
 	 * ```
 	 */
-	function CrmSdk({ workspaceId, publicKey, apiUrl, wsUrl }) {
+	function CrmSdk({ workspaceId, publicKey }) {
 	    const hostRef = reactExports.useRef(null);
 	    const [portalTarget, setPortalTarget] = reactExports.useState(null);
-	    const config = reactExports.useMemo(() => ({ workspaceId, publicKey, apiUrl, wsUrl }), [workspaceId, publicKey, apiUrl, wsUrl]);
+	    const config = reactExports.useMemo(() => ({ workspaceId, publicKey }), [workspaceId, publicKey]);
 	    reactExports.useEffect(() => {
 	        const host = hostRef.current;
 	        if (!host)

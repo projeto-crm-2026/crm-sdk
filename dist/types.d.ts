@@ -6,10 +6,6 @@ export interface CrmSdkConfig {
     workspaceId: string;
     /** Public API key used to authenticate widget requests (`X-Widget-Key` header). */
     publicKey: string;
-    /** Base URL for the CRM API. Defaults to the production endpoint. */
-    apiUrl?: string;
-    /** Base URL for the CRM WebSocket endpoint. Inferred from apiUrl when omitted. */
-    wsUrl?: string;
 }
 /**
  * Visitor session persisted in localStorage.

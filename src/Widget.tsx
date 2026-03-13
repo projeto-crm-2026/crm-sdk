@@ -122,7 +122,7 @@ export default function Widget({ config }: WidgetProps) {
   const prevMessageCountRef = useRef(0);
 
   const sessionRef = useRef<VisitorSession | null>(null);
-  const apiRef = useRef<ApiClient>(new ApiClient(config.publicKey, config.apiUrl));
+  const apiRef = useRef<ApiClient>(new ApiClient(config.publicKey));
   const wsRef = useRef<WsClient | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -146,9 +146,8 @@ export default function Widget({ config }: WidgetProps) {
     // Only connect WebSocket when we have a chatId.
     if (!session.chatId) return;
 
-    const apiUrl = configRef.current.apiUrl ?? 'https://api.crm.exemplo.com';
-    const wsBase = configRef.current.wsUrl ?? apiUrl.replace(/^http/, 'ws');
-    const wsUrl = `${wsBase}/ws/widget/${session.chatId}?widget_key=${encodeURIComponent(configRef.current.publicKey)}&token=${encodeURIComponent(session.token ?? '')}&visitor_id=${encodeURIComponent(session.visitorId)}`;
+    const wsBase = 'ws://crm-services-nr0a.onrender.com';
+    const wsUrl = `${wsBase}/v1/ws/widget/${session.chatId}?widget_key=${encodeURIComponent(configRef.current.publicKey)}&token=${encodeURIComponent(session.token ?? '')}&visitor_id=${encodeURIComponent(session.visitorId)}`;
 
     wsRef.current?.disconnect();
     wsRef.current = new WsClient(wsUrl, (msg: Message) => {

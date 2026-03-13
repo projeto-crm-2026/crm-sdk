@@ -1,9 +1,8 @@
 import { CreateChatResponse, InitResponse, Message } from './types';
 export declare class ApiClient {
-    private baseUrl;
     private publicKey;
     private token;
-    constructor(publicKey: string, baseUrl?: string);
+    constructor(publicKey: string);
     setToken(token: string): void;
     private request;
     /** POST /widget/init — exchange workspaceId + optional visitorId for a session token. */
