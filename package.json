@@ -1,6 +1,6 @@
 {
   "name": "@projeto-crm-2026/crm-sdk",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Embeddable CRM Chat Widget SDK — React + TypeScript + Tailwind CSS",
   "type": "module",
   "main": "dist/crm-sdk.cjs.js",
@@ -31,8 +31,12 @@
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "peerDependenciesMeta": {
-    "react": { "optional": false },
-    "react-dom": { "optional": false }
+    "react": {
+      "optional": false
+    },
+    "react-dom": {
+      "optional": false
+    }
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^29.0.0",
