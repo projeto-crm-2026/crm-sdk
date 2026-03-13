@@ -146,7 +146,7 @@ export default function Widget({ config }: WidgetProps) {
     // Only connect WebSocket when we have a chatId.
     if (!session.chatId) return;
 
-    const wsBase = 'ws://crm-services-nr0a.onrender.com';
+    const wsBase = 'wss://crm-services-nr0a.onrender.com';
     const wsUrl = `${wsBase}/v1/ws/widget/${session.chatId}?widget_key=${encodeURIComponent(configRef.current.publicKey)}&token=${encodeURIComponent(session.token ?? '')}&visitor_id=${encodeURIComponent(session.visitorId)}`;
 
     wsRef.current?.disconnect();
