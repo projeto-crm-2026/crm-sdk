@@ -243,7 +243,7 @@ function Widget({ config }) {
         // Only connect WebSocket when we have a chatId.
         if (!session.chatId)
             return;
-        const wsBase = 'ws://crm-services-nr0a.onrender.com';
+        const wsBase = 'wss://crm-services-nr0a.onrender.com';
         const wsUrl = `${wsBase}/v1/ws/widget/${session.chatId}?widget_key=${encodeURIComponent(configRef.current.publicKey)}&token=${encodeURIComponent((_a = session.token) !== null && _a !== void 0 ? _a : '')}&visitor_id=${encodeURIComponent(session.visitorId)}`;
         (_b = wsRef.current) === null || _b === void 0 ? void 0 : _b.disconnect();
         wsRef.current = new WsClient(wsUrl, (msg) => {
