@@ -199,7 +199,7 @@ function LoadingSkeleton() {
     return (jsxs("div", { className: "flex flex-col gap-2.5 p-4 flex-1 bg-gray-50", children: [jsx("div", { className: "h-9 w-[55%] rounded-2xl animate-shimmer bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 bg-[length:200%_100%]" }), jsx("div", { className: "h-9 w-[75%] self-end rounded-2xl animate-shimmer bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 bg-[length:200%_100%]" }), jsx("div", { className: "h-9 w-[60%] rounded-2xl animate-shimmer bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 bg-[length:200%_100%]" })] }));
 }
 function EmptyState() {
-    return (jsxs("div", { className: "flex-1 flex flex-col items-center justify-center gap-2 text-gray-400 text-sm text-center p-6", children: [jsx("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round", className: "w-12 h-12 opacity-30", children: jsx("path", { d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" }) }), jsx("span", { children: "Start a conversation \u2014 we typically reply in minutes." })] }));
+    return (jsxs("div", { className: "flex-1 flex flex-col items-center justify-center gap-2 text-gray-400 text-sm text-center p-6", children: [jsx("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round", className: "w-12 h-12 opacity-30", children: jsx("path", { d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" }) }), jsx("span", { children: "Comece uma conversa \u2014 n\u00F3s respondemos normalmente em algumas horas." })] }));
 }
 function Widget({ config }) {
     const [isOpen, setIsOpen] = useState(false);
